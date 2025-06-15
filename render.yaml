@@ -1,0 +1,40 @@
+services:
+  - type: web
+    name: laravel-app
+    env: docker
+    region: oregon
+    plan: free
+    branch: main
+    dockerfilePath: Dockerfile
+    buildCommand: ""
+    startCommand: "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8080"
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_DEBUG
+        value: false
+      - key: APP_URL
+        value: https://laravel-app.onrender.com  # ← عدّليها لاحقًا لرابط التطبيق الحقيقي
+      - key: DB_CONNECTION
+        value: mysql
+      - key: DB_HOST
+        fromDatabase:
+          name: laravel-db
+          property: host
+      - key: DB_PORT
+        value: 3306
+      - key: DB_DATABASE
+        value: document_management_system
+      - key: DB_USERNAME
+        value: aya
+      - key: DB_PASSWORD
+        value: 123456  # ← اكتبي كلمة مرور قوية واكتبيها نفسها تحت databases
+
+databases:
+  - name: laravel-db
+    databaseName: document_management_system
+    user: aya
+    password: 123456  # ← نفس كلمة المرور اللي فوق
+    plan: free
