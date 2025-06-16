@@ -27,18 +27,17 @@ COPY --from=composer/composer:latest-bin /composer /usr/bin/composer
 # تحديد مجلد العمل
 WORKDIR /var/www/html
 
-# نسخ المشروع بالكامل إلى الحاوية
+# نسخ المشروع بالكامل
 COPY . .
 
-# نسخ إعدادات Nginx
-COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
+# نسخ إعدادات Nginx إلى ملف nginx.conf الكامل
+COPY docker/nginx/nginx.conf /etc/nginx/nginx.conf
 
-# إعداد Laravel فقط في وقت التشغيل وليس أثناء البناء
-# (لأن .env وقاعدة البيانات مش موجودين في build)
-# راح نستخدم startCommand لاحقًا
+# تثبيت الحزم
+RUN composer install --no-dev --optimize-autoloader
 
 # فتح المنفذ 80
 EXPOSE 80
 
-# بدء PHP-FPM و Nginx
+# بدء PHP-FPM و Nginx معًا
 CMD ["sh", "-c", "php-fpm -D && nginx -g 'daemon off;'"]

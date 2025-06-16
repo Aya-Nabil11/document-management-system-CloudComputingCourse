@@ -2,19 +2,20 @@ services:
   - type: web
     name: cloudprojectv2
     env: docker
-    healthCheckPath: /
+    buildCommand: "composer install --no-dev --optimize-autoloader"
     startCommand: |
       cp .env.example .env && \
       php artisan key:generate && \
       php artisan migrate --force && \
       php-fpm -D && nginx -g 'daemon off;'
+    healthCheckPath: /
     envVars:
+      - key: APP_KEY
+        generateValue: true
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
         value: false
-      - key: APP_KEY
-        generateValue: true
       - key: DB_CONNECTION
         value: mysql
       - key: DB_HOST
