@@ -2,36 +2,30 @@ services:
   - type: web
     name: cloudprojectv2
     env: docker
-    buildCommand: "composer install --no-dev --optimize-autoloader"
-    startCommand: |
-      cp .env.example .env && \
-      php artisan key:generate && \
-      php artisan migrate --force && \
+    buildCommand: >
+      composer install --no-dev --optimize-autoloader
+    startCommand: >
+      cp .env.example .env &&
+      php artisan key:generate &&
+      php artisan migrate --force &&
+      chmod -R 775 storage bootstrap/cache &&
       php-fpm -D && nginx -g 'daemon off;'
-    healthCheckPath: /
     envVars:
-      - key: APP_KEY
-        generateValue: true
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
-        value: true
+        value: false
+      - key: APP_KEY
+        generateValue: true
       - key: DB_CONNECTION
-        value: mysql
+        value: pgsql
       - key: DB_HOST
-        value: ${db.host}
+        value: dpg-d17vat3uibrs7386vhk0-a
       - key: DB_PORT
-        value: ${db.port}
+        value: 5432
       - key: DB_DATABASE
-        value: ${db.database}
+        value: doc_mang
       - key: DB_USERNAME
-        value: ${db.username}
+        value: doc_mang_user
       - key: DB_PASSWORD
-        value: ${db.password}
-
-databases:
-  - name: db
-    type: mysql
-    plan: free
-    databaseName: cloudprojectv2_db
-    userName: cloudprojectv2_user
+        value: JQ0k0qfROVqTrVeJvxLx5S1nwdUzk9lW
