@@ -36,11 +36,15 @@ RUN composer install --no-dev --optimize-autoloader
 RUN php artisan key:generate --force
 RUN php artisan migrate --force
 
-# Expose port 8000 (Laravel's default serve port)
+# ✅ Clear and rebuild Laravel caches (fixes 404 issue)
+RUN php artisan config:clear \
+    && php artisan route:clear \
+    && php artisan view:clear \
+    && php artisan config:cache \
+    && php artisan route:cache
+
+# Expose port 8000 (Laravel default port)
 EXPOSE 8000
 
-# Start PHP-FPM and Nginx (or just PHP-FPM if using a web server like Caddy/Nginx in a separate container or Render's built-in web server)
-# For Render, we'll use php artisan serve
+# Start Laravel server
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=${PORT}"]
-
-
