@@ -1,6 +1,6 @@
 FROM php:8.2-fpm-alpine
 
-# Install system dependencies
+# تثبيت الحزم المطلوبة
 RUN apk add --no-cache \
     git \
     curl \
@@ -17,31 +17,28 @@ RUN apk add --no-cache \
     make \
     g++
 
-# Install PHP extensions
+# تفعيل إضافات PHP المطلوبة
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install -j$(nproc) gd pdo_mysql zip bcmath opcache intl
 
-# Install Composer
+# تثبيت Composer
 COPY --from=composer/composer:latest-bin /composer /usr/bin/composer
 
-# Set working directory
+# تحديد مجلد العمل
 WORKDIR /var/www/html
 
-# Copy application code
+# نسخ المشروع بالكامل إلى الحاوية
 COPY . .
 
-# Install Composer dependencies
-RUN composer install --no-dev --optimize-autoloader
-
-# Generate application key and run migrations
-RUN php artisan key:generate --force
-RUN php artisan migrate --force
-
-# Copy Nginx configuration
+# نسخ إعدادات Nginx
 COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
 
-# Expose port 80
+# إعداد Laravel فقط في وقت التشغيل وليس أثناء البناء
+# (لأن .env وقاعدة البيانات مش موجودين في build)
+# راح نستخدم startCommand لاحقًا
+
+# فتح المنفذ 80
 EXPOSE 80
 
-# Start both PHP-FPM and Nginx
-CMD ["sh", "-c", "php-fpm & nginx -g 'daemon off;'"]
+# بدء PHP-FPM و Nginx
+CMD ["sh", "-c", "php-fpm -D && nginx -g 'daemon off;'"]
