@@ -16,3 +16,4 @@ Route::get('/documents/searchHandle', [DocumentController::class, 'search'])
     ->name('documents.searchHandle');
 
 Route::resource('documents', DocumentController::class);
+
