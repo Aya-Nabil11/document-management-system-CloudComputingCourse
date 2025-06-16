@@ -7,6 +7,9 @@ use App\Http\Controllers\DashboardController;
 
 
 
+Route::get('/', function () {
+    return view('welcome');
+});
 Route::get('/', [DocumentController::class , 'index'])->name('dashboard');
 
 Route::get('/documents/search', [DocumentController::class, 'searchView'])
