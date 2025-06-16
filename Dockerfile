@@ -1,10 +1,9 @@
 FROM php:8.2-fpm-alpine
 
-# تثبيت أدوات النظام
+# Install system dependencies
 RUN apk add --no-cache \
-    nginx \
-    curl \
     git \
+    curl \
     libzip-dev \
     libpng-dev \
     jpeg-dev \
@@ -12,53 +11,37 @@ RUN apk add --no-cache \
     freetype-dev \
     icu-dev \
     mysql-client \
+    nginx \
     build-base \
     autoconf \
     make \
-    g++ \
-    bash \
-    supervisor \
-    openssl
+    g++
 
-# تثبيت امتدادات PHP المطلوبة من Laravel
+# Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install -j$(nproc) gd pdo_mysql zip bcmath opcache intl
 
-# تثبيت Composer
+# Install Composer
 COPY --from=composer/composer:latest-bin /composer /usr/bin/composer
 
-# تحديد مجلد العمل
-WORKDIR /var/www
+# Set working directory
+WORKDIR /var/www/html
 
-# نسخ ملفات Laravel إلى الحاوية
+# Copy application code
 COPY . .
 
-# إعداد Composer
-RUN composer install --no-dev --optimize-autoloader \
-    && php artisan key:generate --force \
-    && php artisan migrate --force \
-    && php artisan config:clear \
-    && php artisan route:clear \
-    && php artisan config:cache \
-    && php artisan route:cache
+# Install Composer dependencies
+RUN composer install --no-dev --optimize-autoloader
 
-# إعداد Nginx
+# Generate application key and run migrations
+RUN php artisan key:generate --force
+RUN php artisan migrate --force
+
+# Copy Nginx configuration
 COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
 
-# إعداد Supervisor لتشغيل nginx و php-fpm معًا
-RUN mkdir -p /var/log/supervisor
-RUN echo "[supervisord]
-nodaemon=true
-
-[program:php-fpm]
-command=/usr/local/sbin/php-fpm
-
-[program:nginx]
-command=/usr/sbin/nginx -g 'daemon off;'
-" > /etc/supervisord.conf
-
-# فتح البورت 80
+# Expose port 80
 EXPOSE 80
 
-# تشغيل Supervisor
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
+# Start PHP-FPM and Nginx
+CMD php-fpm && nginx -g \'daemon off;\'
