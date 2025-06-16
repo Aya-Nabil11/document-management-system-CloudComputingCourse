@@ -1,9 +1,10 @@
 FROM php:8.2-fpm-alpine
 
-# Install system dependencies
+# تثبيت أدوات النظام
 RUN apk add --no-cache \
-    git \
+    nginx \
     curl \
+    git \
     libzip-dev \
     libpng-dev \
     jpeg-dev \
@@ -14,37 +15,50 @@ RUN apk add --no-cache \
     build-base \
     autoconf \
     make \
-    g++
+    g++ \
+    bash \
+    supervisor \
+    openssl
 
-# Install PHP extensions
+# تثبيت امتدادات PHP المطلوبة من Laravel
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install -j$(nproc) gd pdo_mysql zip bcmath opcache intl
 
-# Install Composer
+# تثبيت Composer
 COPY --from=composer/composer:latest-bin /composer /usr/bin/composer
 
-# Set working directory
-WORKDIR /app
+# تحديد مجلد العمل
+WORKDIR /var/www
 
-# Copy application code
+# نسخ ملفات Laravel إلى الحاوية
 COPY . .
 
-# Install Composer dependencies
-RUN composer install --no-dev --optimize-autoloader
-
-# Generate application key and run migrations
-RUN php artisan key:generate --force
-RUN php artisan migrate --force
-
-# ✅ Clear and rebuild Laravel caches (fixes 404 issue)
-RUN php artisan config:clear \
+# إعداد Composer
+RUN composer install --no-dev --optimize-autoloader \
+    && php artisan key:generate --force \
+    && php artisan migrate --force \
+    && php artisan config:clear \
     && php artisan route:clear \
-    && php artisan view:clear \
     && php artisan config:cache \
     && php artisan route:cache
 
-# Expose port 8000 (Laravel default port)
-EXPOSE 8000
+# إعداد Nginx
+COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
 
-# Start Laravel server
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=${PORT}"]
+# إعداد Supervisor لتشغيل nginx و php-fpm معًا
+RUN mkdir -p /var/log/supervisor
+RUN echo "[supervisord]
+nodaemon=true
+
+[program:php-fpm]
+command=/usr/local/sbin/php-fpm
+
+[program:nginx]
+command=/usr/sbin/nginx -g 'daemon off;'
+" > /etc/supervisord.conf
+
+# فتح البورت 80
+EXPOSE 80
+
+# تشغيل Supervisor
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]

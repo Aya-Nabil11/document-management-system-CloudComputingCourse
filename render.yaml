@@ -1,9 +1,10 @@
 services:
   - type: web
-    name: cloudprojectv2
+    name: laravel-nginx
     env: docker
-    buildCommand: "composer install --no-dev --optimize-autoloader && php artisan migrate --force"
-    startCommand: "php artisan serve --host=0.0.0.0 --port=$PORT"
+    plan: free
+    buildCommand: ""
+    startCommand: ""
     healthCheckPath: /
     envVars:
       - key: APP_KEY
@@ -29,7 +30,5 @@ databases:
   - name: db
     type: mysql
     plan: free
-    databaseName: cloudprojectv2_db
-    userName: cloudprojectv2_user
-
-
+    databaseName: laravel_nginx_db
+    userName: laravel_user
