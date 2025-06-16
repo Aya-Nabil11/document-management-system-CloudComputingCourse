@@ -7,7 +7,7 @@ use App\Http\Controllers\DashboardController;
 
 
 
-Route::get('/index', [DocumentController::class , 'index'])->name('dashboard');
+Route::get('/index', [DocumentController::class , '/'])->name('dashboard');
 
 Route::get('/documents/search', [DocumentController::class, 'searchView'])
     ->name('documents.search');
