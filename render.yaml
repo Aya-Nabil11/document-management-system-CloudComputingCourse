@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: document-management-system
+    env: docker
+    dockerfilePath: Dockerfile
+    buildCommand: |
+      composer install --no-dev --optimize-autoloader
+      yarn install
+      yarn run build
+      php artisan migrate --force
+      php artisan config:cache
+      php artisan route:cache
+      php artisan view:cache
+    startCommand: /start.sh
+    envVars:
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_URL
+        value: # Render will set this automatically
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        value: dpg-d18k48bipnbc738t7lfg-a
+      - key: DB_PORT
+        value: 5432
+      - key: DB_DATABASE
+        value: doc_mang_rcx4
+      - key: DB_USERNAME
+        value: doc_mang_rcx4_user
+      - key: DB_PASSWORD
+        value: 66Em0DM2nWCG3PEqo0A5ojNrWkcZo9GH
