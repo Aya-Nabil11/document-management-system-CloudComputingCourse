@@ -15,8 +15,6 @@ services:
         value: production
       - key: APP_DEBUG
         value: true
-      - key: APP_KEY
-        generateValue: true
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_HOST
