@@ -5,7 +5,12 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 
+use Illuminate\Support\Facades\Artisan;
 
+Route::get('/run-migration', function () {
+    Artisan::call('migrate', ['--force' => true]);
+    return 'Migration executed!';
+});
 
 
 Route::get('/', [DocumentController::class , 'index'])->name('dashboard');
