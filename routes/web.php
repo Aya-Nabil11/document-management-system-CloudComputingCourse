@@ -7,7 +7,7 @@ use App\Http\Controllers\DashboardController;
 
 
 Route::get('/', function () {
-    return 'Laravel is working!';
+    return view('documents.index');
 });
 
 // Route::get('/', [DocumentController::class , 'index'])->name('dashboard');
