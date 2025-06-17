@@ -2,6 +2,9 @@ FROM richarvey/nginx-php-fpm:3.1.6
 
 COPY . .
 
+# Ensure the run directory exists and has correct permissions for PHP-FPM socket
+RUN mkdir -p /var/www/html/run && chmod 775 /var/www/html/run && chown www-data:www-data /var/www/html/run
+
 # Image config
 ENV WEBROOT /var/www/html/public
 ENV PHP_ERRORS_STDERR 1
