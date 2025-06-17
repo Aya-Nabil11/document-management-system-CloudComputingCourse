@@ -7,21 +7,29 @@ services:
 
     buildCommand: |
       composer install --no-dev --optimize-autoloader
+
+      # تثبيت الموارد الأمامية إذا كانت موجودة
       yarn install || true
       yarn run build || true
 
+      # تنظيف الكاش أولاً
       php artisan config:clear
       php artisan route:clear
+      php artisan view:clear
 
+      # إعادة توليد الكاش
       php artisan config:cache
       php artisan route:cache
       php artisan view:cache
 
+      # تنفيذ المايجريشن إجباريًا
       php artisan migrate --force
+
+      # صلاحيات الملفات
       chmod -R 775 storage bootstrap/cache
       chown -R www-data:www-data storage bootstrap/cache
 
-    startCommand: /start.sh
+    startCommand: php artisan serve --host=0.0.0.0 --port=10000
 
     envVars:
       - key: APP_KEY
