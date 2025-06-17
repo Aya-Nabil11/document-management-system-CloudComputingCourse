@@ -1,46 +1,20 @@
-FROM php:8.2-fpm-alpine
+FROM richarvey/nginx-php-fpm:3.1.6
 
-# تثبيت الحزم المطلوبة + PostgreSQL
-RUN apk add --no-cache \
-    nginx \
-    curl \
-    git \
-    unzip \
-    zip \
-    libzip-dev \
-    oniguruma-dev \
-    autoconf \
-    gcc \
-    g++ \
-    make \
-    libpng-dev \
-    libjpeg-turbo-dev \
-    libwebp-dev \
-    freetype-dev \
-    icu-dev \
-    postgresql-dev # ✅ إضافة دعم PostgreSQL
-
-# إعداد GD وتحميل الامتدادات المطلوبة
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
-    && docker-php-ext-install -j$(nproc) gd pdo_pgsql zip bcmath opcache intl # ✅ استخدام pdo_pgsql بدلًا من pdo_mysql
-
-# تحميل Composer الرسمي من Docker Hub
-COPY --from=composer/composer:latest-bin /composer /usr/bin/composer
-
-# تعيين مجلد العمل
-WORKDIR /var/www/html
-
-# نسخ ملفات المشروع إلى داخل الحاوية
 COPY . .
 
-# تثبيت مكتبات PHP بدون حزم التطوير
-RUN composer install --no-dev --optimize-autoloader
+# Image config
+ENV SKIP_COMPOSER 1
+ENV WEBROOT /var/www/html/public
+ENV PHP_ERRORS_STDERR 1
+ENV RUN_SCRIPTS 1
+ENV REAL_IP_HEADER 1
 
-# نسخ ملف إعداد Nginx
-COPY docker/nginx/default.conf /etc/nginx/http.d/default.conf
+# Laravel config
+ENV APP_ENV production
+ENV APP_DEBUG false
+ENV LOG_CHANNEL stderr
 
-# فتح المنفذ 80
-EXPOSE 80
+# Allow composer to run as root
+ENV COMPOSER_ALLOW_SUPERUSER 1
 
-# تشغيل PHP-FPM و Nginx
-CMD ["sh", "-c", "php-fpm -D && nginx -g 'daemon off;'"]
+CMD ["/start.sh"]
